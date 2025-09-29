@@ -190,4 +190,5 @@ window.onload = () => {
   renderMeja();
   renderReservasi();
   renderOpenPlay();
+  updateOpenDropdown();
 };
