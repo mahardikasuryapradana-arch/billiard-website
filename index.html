@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reservasi Billiard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <header class="bg-green-800 text-white p-4 text-center text-2xl font-bold">
+    Reservasi Meja Billiard
+  </header>
+
+  <main class="p-6 max-w-4xl mx-auto">
+    <div class="mb-6">
+      <h2 class="text-xl font-semibold mb-2">Status Meja</h2>
+      <p id="status" class="text-gray-700">Memuat...</p>
+    </div>
+
+    <div id="meja-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6"></div>
+
+    <div class="bg-white shadow-md rounded-lg p-4">
+      <h2 class="text-xl font-semibold mb-4">Form Reservasi</h2>
+      <form id="formReservasi" class="space-y-4">
+        <input type="text" id="nama" placeholder="Nama Pemesan" class="w-full p-2 border rounded" required>
+        <input type="date" id="tanggal" class="w-full p-2 border rounded" required>
+        <input type="time" id="jam" class="w-full p-2 border rounded" required>
+        <select id="meja" class="w-full p-2 border rounded" required></select>
+        <button type="submit" class="w-full bg-green-700 text-white py-2 rounded hover:bg-green-800">Pesan</button>
+      </form>
+    </div>
+
+    <div class="mt-6 bg-white shadow-md rounded-lg p-4">
+      <h2 class="text-xl font-semibold mb-4">Daftar Reservasi</h2>
+      <ul id="daftarReservasi" class="space-y-2"></ul>
+    </div>
+  </main>
+
+  <footer class="bg-gray-800 text-white text-center p-4 mt-6">
+    © 2025 Billiard Center. All rights reserved.
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
