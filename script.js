@@ -16,7 +16,7 @@ function renderMeja() {
   for (let i = 1; i <= jumlahMeja; i++) {
     const booked = reservasi.some(r => r.meja === i && r.tanggal === today);
     const div = document.createElement("div");
-    div.className = `p-4 rounded-lg text-center font-semibold ${booked ? "bg-red-400 text-white" : "bg-green-400 text-white"}`;
+    div.className = `p-6 rounded-2xl text-center font-semibold ${booked ? "bg-red-500 text-white shadow-md" : "bg-green-400 text-white shadow-md"}`;
     div.textContent = `Meja ${i}`;
     container.appendChild(div);
   }
@@ -43,11 +43,11 @@ function renderReservasi() {
   list.innerHTML = "";
   reservasi.forEach((r, index) => {
     const li = document.createElement("li");
-    li.className = "flex justify-between items-center p-2 border rounded";
+    li.className = "flex justify-between items-center p-3 border rounded-lg shadow-sm bg-gray-50";
     li.innerHTML = `<span>${r.nama} - Meja ${r.meja} (${r.tanggal} ${r.jam})</span>`;
     const btn = document.createElement("button");
     btn.textContent = "Batal";
-    btn.className = "bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600";
+    btn.className = "bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600";
     btn.onclick = () => {
       reservasi.splice(index, 1);
       localStorage.setItem("reservasi", JSON.stringify(reservasi));
