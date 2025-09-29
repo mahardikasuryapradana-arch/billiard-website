@@ -1,4 +1,16 @@
-/* Tambahan style di luar Tailwind (opsional) */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
+}
+
+h1, h2 {
+  font-family: 'Roboto Slab', serif;
+}
+
+#meja-container div {
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+#meja-container div:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0,0,0,0.2);
 }
