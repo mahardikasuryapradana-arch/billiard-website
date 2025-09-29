@@ -155,6 +155,75 @@ function renderReservasi() {
     const li = document.createElement("li");
     li.className = "flex justify-between items-center p-3 border rounded-lg shadow-sm bg-gray-50";
 
+const jumlahMeja = 12;
+let reservasi = JSON.parse(localStorage.getItem("reservasi")) || [];
+let openPlay = JSON.parse(localStorage.getItem("openPlay")) || [];
+
+// Update status meja
+function updateStatus() {
+  const total = jumlahMeja;
+  const booked = reservasi.length + openPlay.length;
+  const available = total - booked;
+  document.getElementById("status").textContent = `Tersedia: ${available} meja | Terisi: ${booked} meja`;
+}
+
+// Render grid meja
+function renderMeja() {
+  const container = document.getElementById("meja-container");
+  container.innerHTML = "";
+
+  for (let i = 1; i <= jumlahMeja; i++) {
+    const booked = reservasi.some(r => r.meja === i) || openPlay.some(r => r.meja === i);
+    const div = document.createElement("div");
+    div.className = `p-6 rounded-2xl text-center font-semibold ${booked ? "bg-red-500 text-white shadow-md" : "bg-green-400 text-white shadow-md"}`;
+    div.textContent = `Meja ${i}`;
+    container.appendChild(div);
+  }
+
+  updateDropdown();
+  updateOpenDropdown();
+  updateStatus();
+}
+
+// Update dropdown form reguler
+function updateDropdown() {
+  const dropdown = document.getElementById("meja");
+  dropdown.innerHTML = "";
+  for (let i = 1; i <= jumlahMeja; i++) {
+    const booked = reservasi.some(r => r.meja === i) || openPlay.some(r => r.meja === i);
+    if (!booked) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = `Meja ${i}`;
+      dropdown.appendChild(option);
+    }
+  }
+}
+
+// Update dropdown form open play
+function updateOpenDropdown() {
+  const dropdown = document.getElementById("mejaOpen");
+  dropdown.innerHTML = "";
+  for (let i = 1; i <= jumlahMeja; i++) {
+    const booked = reservasi.some(r => r.meja === i) || openPlay.some(r => r.meja === i);
+    if (!booked) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = `Meja ${i}`;
+      dropdown.appendChild(option);
+    }
+  }
+}
+
+// Render daftar reservasi reguler
+function renderReservasi() {
+  const list = document.getElementById("daftarReservasi");
+  list.innerHTML = "";
+
+  reservasi.forEach((r, index) => {
+    const li = document.createElement("li");
+    li.className = "flex justify-between items-center p-3 border rounded-lg shadow-sm bg-gray-50";
+
     const timerSpan = document.createElement("span");
     function updateTimer() {
       const remaining = Math.max(0, r.endTime - Date.now());
