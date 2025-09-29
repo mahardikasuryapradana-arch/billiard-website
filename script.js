@@ -107,3 +107,87 @@ window.onload = () => {
   renderMeja();
   renderReservasi();
 };
+
+let openPlay = JSON.parse(localStorage.getItem("openPlay")) || [];
+
+function updateOpenDropdown() {
+  const dropdown = document.getElementById("mejaOpen");
+  dropdown.innerHTML = "";
+  for (let i = 1; i <= jumlahMeja; i++) {
+    const booked = reservasi.some(r => r.meja === i) || openPlay.some(r => r.meja === i);
+    if (!booked) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = `Meja ${i}`;
+      dropdown.appendChild(option);
+    }
+  }
+}
+
+function renderOpenPlay() {
+  const list = document.getElementById("daftarOpenPlay") || document.createElement("ul");
+  list.id = "daftarOpenPlay";
+  list.className = "space-y-3";
+
+  if (!document.getElementById("daftarOpenPlay")) {
+    document.querySelector("main").appendChild(list);
+  }
+
+  list.innerHTML = "";
+
+  openPlay.forEach((r, index) => {
+    const li = document.createElement("li");
+    li.className = "flex justify-between items-center p-3 border rounded-lg shadow-sm bg-gray-50";
+
+    const timerSpan = document.createElement("span");
+    function updateTimer() {
+      const elapsed = Date.now() - r.startTime;
+      const hours = Math.floor(elapsed / 3600000);
+      const minutes = Math.floor((elapsed % 3600000) / 60000);
+      const seconds = Math.floor((elapsed % 60000) / 1000);
+      timerSpan.textContent = `Waktu main: ${hours}h ${minutes}m ${seconds}s`;
+    }
+    updateTimer();
+    setInterval(updateTimer, 1000);
+
+    li.innerHTML = `<span>${r.nama} - Meja ${r.meja} (Open Play)</span>`;
+    li.appendChild(timerSpan);
+
+    const btn = document.createElement("button");
+    btn.textContent = "Selesai";
+    btn.className = "bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 ml-3";
+    btn.onclick = () => {
+      openPlay.splice(index, 1);
+      localStorage.setItem("openPlay", JSON.stringify(openPlay));
+      renderMeja();
+      renderOpenPlay();
+    };
+    li.appendChild(btn);
+    list.appendChild(li);
+  });
+}
+
+document.getElementById("formOpenPlay").addEventListener("submit", e => {
+  e.preventDefault();
+  const nama = document.getElementById("namaOpen").value.trim();
+  const meja = parseInt(document.getElementById("mejaOpen").value);
+
+  if (reservasi.some(r => r.meja === meja) || openPlay.some(r => r.meja === meja)) {
+    alert("Meja sedang digunakan.");
+    return;
+  }
+
+  const startTime = Date.now();
+
+  openPlay.push({ nama, meja, startTime });
+  localStorage.setItem("openPlay", JSON.stringify(openPlay));
+  renderMeja();
+  renderOpenPlay();
+  e.target.reset();
+});
+
+window.onload = () => {
+  renderMeja();
+  renderReservasi();
+  renderOpenPlay();
+};
