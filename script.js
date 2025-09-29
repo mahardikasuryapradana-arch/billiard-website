@@ -1,3 +1,29 @@
+const jumlahMeja = 12;
+let reservasi = JSON.parse(localStorage.getItem("reservasi")) || [];
+let openPlay = JSON.parse(localStorage.getItem("openPlay")) || [];
+
+function updateStatus() {
+  const total = jumlahMeja;
+  const booked = reservasi.length + openPlay.length;
+  const available = total - booked;
+  document.getElementById("status").textContent = `Tersedia: ${available} meja | Terisi: ${booked} meja`;
+}
+
+function renderMeja() {
+  const container = document.getElementById("meja-container");
+  container.innerHTML = "";
+
+  for (let i = 1; i <= jumlahMeja; i++) {
+    const booked = reservasi.some(r => r.meja === i) || openPlay.some(r => r.meja === i);
+    const div = document.createElement("div");
+    div.className = `p-6 rounded-2xl text-center font-semibold ${booked ? "bg-red-500 text-white shadow-md" : "bg-green-400 text-white shadow-md"}`;
+    div.textContent = `Meja ${i}`;
+    container.appendChild(div);
+  }
+
+  updateDropdown();
+  updateOpenDropdown();
+  updateStatus();
 }
 
 // Update dropdown form reguler
