@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reservasi Billiard Online</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-gray-50 to-white text-gray-800 p-6">
+  <header class="max-w-6xl mx-auto flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-extrabold">Billiard Club — Reservasi Online</h1>
+      <p class="text-sm text-gray-600">Pesan meja, lihat ketersediaan, dan kelola pemesanan dengan mudah.</p>
+    </div>
+    <div class="text-right">
+      <div class="text-sm">Kontak: <span class="font-medium">+62 812-3456-7890</span></div>
+      <div class="text-xs text-gray-500">Jam buka: 10:00 — 02:00</div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto mt-8">
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Daftar Meja -->
+      <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-xl font-semibold">Daftar Meja</h2>
+            <p class="text-sm text-gray-500">Klik meja untuk memesan.</p>
+          </div>
+          <div class="space-x-2">
+            <label class="text-sm text-gray-600">Pilih tanggal</label>
+            <input type="date" id="dateInput" class="ml-2 border rounded px-2 py-1" />
+            <label class="text-sm text-gray-600 ml-4">Jam</label>
+            <input type="time" id="timeInput" value="18:00" class="ml-2 border rounded px-2 py-1" />
+          </div>
+        </div>
+
+        <div id="tablesGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="bg-white p-6 rounded-2xl shadow flex flex-col gap-4">
+        <div>
+          <h3 class="font-semibold">Ringkasan</h3>
+          <p class="text-sm text-gray-500">Tanggal: <span id="summaryDate" class="font-medium"></span></p>
+          <p class="text-sm text-gray-500">Jam: <span id="summaryTime" class="font-medium"></span></p>
+          <p class="mt-2 text-lg font-bold">Meja tersisa: <span id="availableCount">0</span></p>
+        </div>
+
+        <div class="pt-2 border-t">
+          <h4 class="font-medium">Buat pemesanan cepat</h4>
+          <div class="mt-3 flex flex-col gap-2">
+            <select id="quickTable" class="border rounded p-2 text-sm"></select>
+            <input id="quickName" class="border rounded p-2 text-sm" placeholder="Nama" />
+            <input id="quickPhone" class="border rounded p-2 text-sm" placeholder="No. HP" />
+            <div class="flex gap-2">
+              <input type="date" id="quickDate" class="border rounded p-2 text-sm flex-1" />
+              <input type="time" id="quickTime" class="border rounded p-2 text-sm" value="18:00" />
+            </div>
+            <div class="flex gap-2 items-center">
+              <label class="text-sm">Durasi (menit)</label>
+              <input type="number" id="quickDuration" min="30" step="15" value="60" class="border rounded p-2 text-sm w-24" />
+              <button id="quickBook" class="ml-auto px-3 py-2 rounded bg-indigo-600 text-white text-sm">Pesan</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t">
+          <h4 class="font-medium">Daftar pemesanan</h4>
+          <div id="bookingsList" class="max-h-48 overflow-auto mt-2 text-sm text-gray-600"></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="max-w-6xl mx-auto text-center text-sm text-gray-500 mt-10">© <span id="year"></span> Billiard Club — Buat dengan ♠</footer>
+
+  <script>
+    const DEFAULT_TABLE_COUNT = 12;
+    const tables = Array.from({ length: DEFAULT_TABLE_COUNT }, (_, i) => ({
+      id: i + 1,
+      name: `Table ${i + 1}`,
+      seats: 4,
+    }));
+    let bookings = JSON.parse(localStorage.getItem('billiard_bookings') || '[]');
+
+    const dateInput = document.getElementById('dateInput');
+    const timeInput = document.getElementById('timeInput');
+    const summaryDate = document.getElementById('summaryDate');
+    const summaryTime = document.getElementById('summaryTime');
+    const availableCount = document.getElementById('availableCount');
+    const tablesGrid = document.getElementById('tablesGrid');
+    const quickTable = document.getElementById('quickTable');
+    const bookingsList = document.getElementById('bookingsList');
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+    dateInput.value = new Date().toISOString().slice(0,10);
+    summaryDate.textContent = dateInput.value;
+    summaryTime.textContent = timeInput.value;
+
+    function toTimestamp(dateStr, timeStr){
+      return new Date(`${dateStr}T${timeStr}:00`).getTime();
+    }
+
+    function isTableBookedAt(tableId, dateStr, timeStr){
+      const ts = toTimestamp(dateStr, timeStr);
+      return bookings.some(b => {
+        if(b.tableId !== tableId) return false;
+        const s = toTimestamp(b.date, b.time);
+        const e = s + b.duration*60000;
+        return ts >= s && ts < e;
+      });
+    }
+
+    function countAvailable(dateStr,timeStr){
+      const ts = toTimestamp(dateStr,timeStr);
+      const bookedIds = new Set();
+      bookings.forEach(b=>{
+        const s = toTimestamp(b.date,b.time);
+        const e = s+b.duration*60000;
+        if(ts>=s && ts<e) bookedIds.add(b.tableId);
+      });
+      return tables.filter(t=>!bookedIds.has(t.id)).length;
+    }
+
+    function renderTables(){
+      tablesGrid.innerHTML = '';
+      tables.forEach(t=>{
+        const booked = isTableBookedAt(t.id,dateInput.value,timeInput.value);
+        const div = document.createElement('div');
+        div.className = `p-4 rounded-xl border shadow-sm ${booked?'bg-red-50 border-red-200':'bg-white border-gray-100'}`;
+        div.innerHTML = `<div class='flex items-center justify-between'>
+            <div><div class='text-lg font-semibold'>${t.name}</div><div class='text-xs text-gray-500'>Kursi: ${t.seats}</div></div>
+            <div class='text-right'><div class='text-sm font-medium ${booked?'text-red-600':'text-green-600'}'>${booked?'Booked':'Available'}</div><div class='text-xs text-gray-400'>ID ${t.id}</div></div>
+          </div>
+          <div class='mt-3 flex gap-2'>
+            <button class='flex-1 py-2 rounded-lg border text-sm font-medium' ${booked?'disabled':''} onclick='openBooking(${t.id})'>${booked?'Tidak tersedia':'Pesan'}</button>
+          </div>`;
+        tablesGrid.appendChild(div);
+      });
+      summaryDate.textContent=dateInput.value;
+      summaryTime.textContent=timeInput.value;
+      availableCount.textContent=countAvailable(dateInput.value,timeInput.value);
+      quickTable.innerHTML='<option value="">Pilih meja</option>'+tables.map(tt=>`<option value="${tt.id}">${tt.name}</option>`).join('');
+    }
+
+    function renderBookings(){
+      bookingsList.innerHTML = bookings.length? '':'<div class="text-xs text-gray-500">Belum ada pemesanan.</div>';
+      bookings.forEach(b=>{
+        const div = document.createElement('div');
+        div.className='flex items-center justify-between py-1 border-b';
+        div.innerHTML=`<div><div class='text-sm font-medium'>${b.name} — ${b.tableName}</div><div class='text-xs text-gray-500'>${b.date} ${b.time} • ${b.duration} menit</div></div><button class='text-xs text-red-600' onclick='cancelBooking(${b.id})'>Batal</button>`;
+        bookingsList.appendChild(div);
+      });
+    }
+
+    function openBooking(id){
+      const name = prompt('Masukkan nama:');
+      if(!name) return;
+      const phone = prompt('Masukkan no HP:');
+      const duration = 60;
+      const table = tables.find(t=>t.id===id);
+      const newB={id:Date.now(),tableId:id,tableName:table.name,name,phone,date:dateInput.value,time:timeInput.value,duration};
+      bookings.unshift(newB);
+      localStorage.setItem('billiard_bookings',JSON.stringify(bookings));
+      renderTables();renderBookings();
+    }
+
+    function cancelBooking(id){
+      bookings=bookings.filter(b=>b.id!==id);
+      localStorage.setItem('billiard_bookings',JSON.stringify(bookings));
+      renderTables();renderBookings();
+    }
+
+    document.getElementById('quickBook').onclick=()=>{
+      const tableId=Number(quickTable.value);
+      if(!tableId) return alert('Pilih meja dulu.');
+      const name=document.getElementById('quickName').value;
+      const phone=document.getElementById('quickPhone').value;
+      const date=document.getElementById('quickDate').value||dateInput.value;
+      const time=document.getElementById('quickTime').value;
+      const duration=Number(document.getElementById('quickDuration').value);
+      if(!name||!phone) return alert('Isi nama dan no HP.');
+      const table=tables.find(t=>t.id===tableId);
+      bookings.unshift({id:Date.now(),tableId,name,tableName:table.name,phone,date,time,duration});
+      localStorage.setItem('billiard_bookings',JSON.stringify(bookings));
+      renderTables();renderBookings();
+    };
+
+    dateInput.onchange=renderTables;
+    timeInput.onchange=renderTables;
+
+    renderTables();
+    renderBookings();
+  </script>
+</body>
+</html>
